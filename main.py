@@ -10,8 +10,10 @@ from time import mktime
 BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
-# Keyword
-RAW_KEYWORDS = "saham OR IHSG OR BBCA OR BBRI OR GOTO site:kontan.co.id OR site:bisnis.com"
+# UPDATED: Menambahkan 'OR site:investor.id'
+# Google News akan mencari kata kunci "saham/IHSG/dll" di dalam 3 website ini
+RAW_KEYWORDS = "saham OR IHSG OR BBCA OR BBRI OR GOTO site:kontan.co.id OR site:bisnis.com OR site:investor.id"
+
 encoded_keywords = quote(RAW_KEYWORDS)
 RSS_URL = f"https://news.google.com/rss/search?q={encoded_keywords}&hl=id-ID&gl=ID&ceid=ID:id"
 
@@ -43,14 +45,13 @@ def check_news():
         print(f"Error mengambil RSS: {e}")
         return
 
-    # Filter waktu: 45 menit (supaya ada overlap sedikit dengan jadwal cron 30 menit)
+    # Filter waktu: 45 menit (overlap aman dengan jadwal cron 30 menit)
     time_threshold = datetime.now(timezone.utc) - timedelta(minutes=45) 
     
     count = 0
     # Membalik urutan agar berita terlama (dalam window waktu) dikirim duluan
     for entry in reversed(feed.entries):
         if hasattr(entry, 'published_parsed'):
-            # Convert struct_time ke datetime timezone-aware (UTC)
             published_time = datetime.fromtimestamp(mktime(entry.published_parsed), tz=timezone.utc)
         else:
             published_time = datetime.now(timezone.utc)
@@ -60,15 +61,10 @@ def check_news():
             link = entry.link
             source = entry.source.title if 'source' in entry else "Google News"
             
-            # Bersihkan judul dari tag HTML yang mungkin terbawa
+            # Bersihkan judul
             title = title.replace("<b>", "").replace("</b>", "")
             
             # --- FORMAT COMPACT ---
-            # Contoh: 
-            # 🗞 Saham BBCA Melesat (Link)
-            # ↳ Kontan • 10:30 WIB
-            
-            # Konversi waktu ke WIB (UTC+7) untuk display
             wib_time = published_time + timedelta(hours=7)
             time_str = wib_time.strftime("%H:%M")
 
@@ -80,8 +76,7 @@ def check_news():
             send_telegram_message(msg)
             count += 1
             print(f"-> Terkirim: {title}")
-            # Jeda 2 detik agar urutan pesan di Telegram rapi
-            time.sleep(2)
+            time.sleep(2) # Delay agar urutan di Telegram rapi
             
     if count == 0:
         print("Tidak ada berita baru.")
