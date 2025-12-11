@@ -2,10 +2,15 @@ name: Monitor Berita Saham
 
 on:
   schedule:
-    # Jalan setiap 30 menit
-    # Format cron: "menit jam hari bulan hari_minggu"
-    - cron: '*/30 * * * *'
-  workflow_dispatch: # Supaya bisa dijalankan manual tombol "Run" untuk tes
+    # Penjelasan Cron:
+    # */30 : Setiap 30 menit
+    # 1-11 : Jam 01:00 UTC s/d 11:00 UTC (08:00 s/d 18:00 WIB)
+    # * : Setiap tanggal
+    # * : Setiap bulan
+    # 1-5  : Senin s/d Jumat
+    - cron: '*/30 1-11 * * 1-5'
+  
+  workflow_dispatch: # Tombol manual tetap ada
 
 jobs:
   check-news:
