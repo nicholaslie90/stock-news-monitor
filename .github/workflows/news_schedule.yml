@@ -1,0 +1,31 @@
+name: Monitor Berita Saham
+
+on:
+  schedule:
+    # Jalan setiap 30 menit
+    # Format cron: "menit jam hari bulan hari_minggu"
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Supaya bisa dijalankan manual tombol "Run" untuk tes
+
+jobs:
+  check-news:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run script
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python main.py
