@@ -4,16 +4,20 @@ import time
 from datetime import datetime, timedelta
 from time import mktime
 import os
+from urllib.parse import quote  # <--- Tambahan Penting 1
 
 # --- KONFIGURASI ---
-# Gunakan Environment Variables agar aman saat di-hosting
 BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
-# Keyword pencarian Google News (RSS)
-# Contoh: Mencari berita tentang saham BBCA, BBRI, atau IHSG
-KEYWORDS = "saham OR IHSG OR BBCA OR BBRI OR GOTO site:kontan.co.id OR site:bisnis.com"
-RSS_URL = f"https://news.google.com/rss/search?q={KEYWORDS}&hl=id-ID&gl=ID&ceid=ID:id"
+# Keyword dengan spasi
+RAW_KEYWORDS = "saham OR IHSG OR BBCA OR BBRI OR GOTO site:kontan.co.id OR site:bisnis.com"
+
+# Lakukan encoding agar spasi berubah menjadi %20
+encoded_keywords = quote(RAW_KEYWORDS) # <--- Tambahan Penting 2
+
+# Masukkan keyword yang sudah di-encode ke dalam URL
+RSS_URL = f"https://news.google.com/rss/search?q={encoded_keywords}&hl=id-ID&gl=ID&ceid=ID:id"
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
